@@ -72,6 +72,10 @@ function finish(error) { if (closed) return; send({ type: 'done', error }); clos
     '})()'));
   if (setup.error) { setup.error.dispose(); finish('RUNTIME_ERROR'); return; }
   setup.value.dispose();
+  // Trusted runtime/bootstrap work must not consume the model script's CPU budget.
+  // Slow native/WASM startup (notably Windows arm64 runners) can otherwise exhaust
+  // very small budgets before the first line of untrusted code executes.
+  usedCpu = 0;
   let execution;
   const check = () => {
     if (closed) return;

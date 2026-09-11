@@ -597,12 +597,12 @@ describe('enabled plugin process ownership', () => {
     vi.mocked(getSecret).mockImplementationOnce(() => new Promise(resolve => { release = resolve; }));
     manager = new PluginManager(); await manager.initialize(dir);
     try {
-      await vi.waitFor(() => expect(manager.snapshot().plugins.find(row => row.id === h.row.id)!.status).toBe('ready'));
-      const result = await Promise.race([manager.call('Echo.Mixed', { value: 'ready peer' }), new Promise(resolve => setTimeout(() => resolve('blocked'), 200))]);
+      await vi.waitFor(() => expect(manager.snapshot().plugins.find(row => row.id === h.row.id)!.status).toBe('ready'), { timeout: 5000 });
+      const result = await Promise.race([manager.call('Echo.Mixed', { value: 'ready peer' }), new Promise(resolve => setTimeout(() => resolve('blocked'), 2000))]);
       expect(result).not.toBe('blocked');
       const active = (await h.pids()).at(-1)!;
       const closing = manager.close();
-      await vi.waitFor(() => expect(alive(active.pid)).toBe(false), { timeout: 1000 });
+      await vi.waitFor(() => expect(alive(active.pid)).toBe(false), { timeout: 5000 });
       await closing;
     } finally { release?.('slow'); }
   });

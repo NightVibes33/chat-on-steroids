@@ -86,6 +86,7 @@ describe('session finish turn identity', () => {
       hooks.delivered.push({ id: 'new-user-work', sessionId, text: 'Changed instructions', state: 'sent' });
       for (const listener of hooks.inputListeners) listener();
     } else await releaseSessionFinish(sessionId, 'turn-one');
+    await vi.advanceTimersByTimeAsync(0);
     vi.useRealTimers();
     await settleSessionFinishForTests();
     expect(hooks.followup).toHaveBeenCalledTimes(1);
