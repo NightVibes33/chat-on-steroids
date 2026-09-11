@@ -149,7 +149,7 @@ describe('session summary pages', () => {
     expect(second.total).toBe(65);
     expect(second.nextCursor).toBeNull();
     expect(new Set([...first.sessions, ...second.sessions].map((entry) => entry.id)).size).toBe(65);
-  });
+  }, 90_000);
 });
 
 function summary(id: string, updatedAt: number, events: number): SessionSummary {

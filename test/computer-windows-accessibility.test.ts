@@ -197,7 +197,7 @@ try {
       expect(result.status, result.stderr + result.stdout).toBe(0);
       expect(result.stdout).toContain('WINDOWS_ACCESSIBILITY_PROBE_OK');
     } finally {
-      rmSync(dir, { recursive: true, force: true });
+      rmSync(dir, { recursive: true, force: true, maxRetries: 10, retryDelay: 200 });
     }
   }, 40_000);
 });

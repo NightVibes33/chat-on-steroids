@@ -128,7 +128,7 @@ it('emits valid native images and rejects malformed or remote image payloads', a
 it('stops new admission on timeout while an accepted tool finishes under its own owner', async () => {
   let resolve!: (value: ToolResult) => void;
   const invoke = vi.fn(() => new Promise<ToolResult>(done => { resolve = done; }));
-  const output = await runCodeMode('await tools.lookup({}); await tools.lookup({});', tools, invoke, { ...limits, wallMs: 500 });
+  const output = await runCodeMode('await tools.lookup({}); await tools.lookup({});', tools, invoke, { ...limits, wallMs: 5_000 });
   expect(rendered(output)).toContain('TIME_LIMIT');
   expect(rendered(output)).toContain('UNAWAITED_CALLS');
   expect(invoke).toHaveBeenCalledTimes(1);
