@@ -369,8 +369,10 @@ describe('validateNewRoot', () => {
     await expect(validateNewRoot('\\\\server\\share', [])).rejects.toThrow(/UNC/);
   });
 
-  it.runIf(IS_WINDOWS)('rejects a whole drive', async () => {
-    await expect(validateNewRoot(path.parse(base).root, [])).rejects.toThrow(/entire drive/);
+  it.runIf(IS_WINDOWS)('accepts a whole local drive when explicitly approved', async () => {
+    const driveRoot = path.parse(base).root;
+    expect(await validateNewRoot(driveRoot, [])).toBe(await fs.realpath(driveRoot));
+    expect(uniqueRootName(driveRoot, [])).toMatch(/^[a-z]-drive$/);
   });
 
   it.runIf(!IS_WINDOWS)('rejects the whole filesystem root', async () => {
@@ -387,10 +389,8 @@ describe('validateNewRoot', () => {
     ).rejects.toThrow(/overlaps/);
   });
 
-  it('rejects a folder that contains an existing root', async () => {
-    await expect(
-      validateNewRoot(base, [{ name: 'project', path: approved }])
-    ).rejects.toThrow(/overlaps/);
+  it('accepts a parent folder that contains an existing root', async () => {
+    expect(await validateNewRoot(base, [{ name: 'project', path: approved }])).toBe(base);
   });
 
   it('accepts a sibling folder', async () => {

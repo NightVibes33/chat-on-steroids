@@ -82,7 +82,12 @@ export function normaliseRootName(input: string): string {
 
 /** Picks a root name derived from a folder that does not collide with existing ones. */
 export function uniqueRootName(folderPath: string, existing: readonly Root[]): string {
-  const base = normaliseRootName(path.basename(folderPath) || 'folder');
+  const parsed = path.parse(folderPath);
+  const isWindowsDriveRoot = IS_WINDOWS && parsed.root.toLowerCase() === path.resolve(folderPath).toLowerCase();
+  const driveLabel = isWindowsDriveRoot && /^[A-Za-z]:\\?$/.test(parsed.root)
+    ? `${parsed.root[0]!.toLowerCase()}-drive`
+    : null;
+  const base = normaliseRootName(driveLabel || path.basename(folderPath) || 'folder');
   const taken = new Set([...RESERVED_ROOT_NAMES, ...existing.map((r) => r.name)]);
   if (!taken.has(base)) return base;
   for (let i = 2; i < 1000; i++) {
@@ -435,12 +440,8 @@ export async function validateNewRoot(folderPath: string, existing: readonly Roo
   }
   const parsed = path.parse(real);
   const sameRoot = IS_WINDOWS ? parsed.root.toLowerCase() === real.toLowerCase() : parsed.root === real;
-  if (sameRoot) {
-    throw new SandboxError(
-      IS_WINDOWS
-        ? 'Approving an entire drive is not allowed. Pick a folder inside it.'
-        : 'Approving the entire filesystem root is not allowed. Pick a folder inside it.'
-    );
+  if (sameRoot && !IS_WINDOWS) {
+    throw new SandboxError('Approving the entire filesystem root is not allowed. Pick a folder inside it.');
   }
   for (const other of existing) {
     let otherReal: string;
@@ -449,7 +450,7 @@ export async function validateNewRoot(folderPath: string, existing: readonly Roo
     } catch {
       continue;
     }
-    if (isContained(otherReal, real) || isContained(real, otherReal)) {
+    if (isContained(otherReal, real)) {
       throw new SandboxError(`That folder overlaps the existing root "/${other.name}"`);
     }
   }

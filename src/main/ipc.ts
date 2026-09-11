@@ -49,7 +49,7 @@ import { clearAllGoalSwitches, draftTaskPlan, listGoalModels, MODEL_PAGE_SIZE, r
 import { forgetExposedSurface } from './mcp/server.js';
 import { runDiagnostics } from './diagnostics.js';
 import { formatLogAsJson, formatLogForClipboard, getLog, logInfo, onLog } from './logger.js';
-import { RESERVED_ROOT_NAMES, uniqueRootName, validateNewRoot, SandboxError, resolvePath } from './sandbox.js';
+import { RESERVED_ROOT_NAMES, uniqueRootName, validateNewRoot, SandboxError, resolvePath, isContained } from './sandbox.js';
 import { addProject, listProjects, removeProject } from './projects.js';
 import { hasSecret, isEncryptionAvailable, secureStorageStatus, setSecret } from './secrets.js';
 import { bundledVersion, locateBinary } from './tunnel/locate.js';
@@ -498,9 +498,10 @@ export function registerIpc(getWindow: () => BrowserWindow | null, quitToInstall
     let addedName = '';
     await updateConfig(async (config) => {
       const real = await validateNewRoot(folderPath, config.roots);
-      const name = uniqueRootName(real, config.roots);
+      const remainingRoots = config.roots.filter((root) => !isContained(real, root.path));
+      const name = uniqueRootName(real, remainingRoots);
       addedName = name;
-      return { ...config, roots: [...config.roots, { name, path: real }] };
+      return { ...config, roots: [...remainingRoots, { name, path: real }] };
     });
     logInfo(`approved folder /${addedName}`);
     return buildState();
