@@ -60,7 +60,7 @@
     "tree-sitter": "0.25.1",
     "tree-sitter-bash": "0.25.1",
     "ws": "8.21.3",
-    "zod": "^4.4.3"
+    "zod": "^4.6.6"
   },
   "devDependencies": {
     "@types/jsdom": "^30.0.0",
